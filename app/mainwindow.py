@@ -1,6 +1,3 @@
-import asyncio
-from ffmpeg.asyncio import FFmpeg
-from ffmpeg import Progress
 import os
 from PySide6.QtCore import QStandardPaths, Signal, Slot
 from PySide6.QtGui import Qt, QIcon, QPixmap, QTransform
@@ -17,7 +14,6 @@ from PySide6.QtWidgets import (
 )
 from gettext import gettext as _
 import traceback
-from app.thumbnail import generate_thumbnail
 
 
 class MainWindow(QMainWindow):
@@ -164,32 +160,3 @@ class MainWindow(QMainWindow):
 
     async def convert(self):
         print('convert')
-        print(self.input_filename)
-        print(self.output_filename)
-        vf = ''
-        if self.rotate_degree == 90:
-            vf = 'transpose=1'
-        elif self.rotate_degree == 180:
-            vf = 'transpose=1,transpose=1'
-        elif self.rotate_degree == 270:
-            vf = 'transpose=2'
-
-        ffmpeg = (
-            FFmpeg()
-            .option('y')
-            .input(self.input_filename)
-            .output(
-                self.output_filename
-            )
-        )
-
-        @ffmpeg.on("progress")
-        def on_progress(progress: Progress):
-            print(progress)
-
-        try:
-            print('start')
-            await ffmpeg.execute()
-            print('done')
-        except Exception:
-            print(traceback.format_exc())
