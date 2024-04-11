@@ -67,10 +67,11 @@ def surfshark():
         api_url = 'https://1.1.1.1/dns-query?type=A&name=' + server['domain']
         res = requests.get(api_url, headers={'Accept': 'application/dns-json'})
         data = res.json()
-        ips = []
+        server['ips'] = []
         for record in data['Answer']:
             ip = record['data']
             if subprocess.call(['ping', '-c', '1', ip], stdout=subprocess.DEVNULL) == 0:
                 print('✅ ' + ip)
+                server['ips'].append(ip)
             else:
                 print('❌' + ip)
