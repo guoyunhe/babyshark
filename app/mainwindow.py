@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from gettext import gettext as _
-import traceback
 
 
 class MainWindow(QMainWindow):
