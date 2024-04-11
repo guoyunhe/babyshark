@@ -1,3 +1,6 @@
+import requests
+import subprocess
+
 def surfshark():
     servers = [
         { 'domain': 'au-bne.prod.surfshark.com', 'name': '澳大利亚・布里斯班' },
@@ -58,3 +61,16 @@ def surfshark():
         { 'domain': 'uz-tas.prod.surfshark.com', 'name': '乌兹别克斯坦・Tashkent' },
         { 'domain': 've-car.prod.surfshark.com', 'name': '委内瑞拉・Caracas' },
     ]
+
+    for server in servers:
+        print('📡 ' + server['domain'])
+        api_url = 'https://1.1.1.1/dns-query?type=A&name=' + server['domain']
+        res = requests.get(api_url, headers={'Accept': 'application/dns-json'})
+        data = res.json()
+        ips = []
+        for record in data['Answer']:
+            ip = record['data']
+            if subprocess.call(['ping', '-c', '1', ip], stdout=subprocess.DEVNULL) == 0:
+                print('✅ ' + ip)
+            else:
+                print('❌' + ip)
