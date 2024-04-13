@@ -20,3 +20,10 @@ $ babyshark
 ```
 
 ![Screenshot](./screenshot.png)
+
+## FAQ
+
+### 所有服务器都连不上
+
+- 隔十五分钟再跑一次
+- 试试重启路由器和光猫
