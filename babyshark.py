@@ -3,7 +3,6 @@
 import nmcli
 import requests
 import subprocess
-import tempfile
 from pathlib import Path
 import os
 
@@ -68,6 +67,7 @@ b260f4b45dec3285875589c97d3087c9
 -----END OpenVPN Static key V1-----
 """
 
+# 通过 DNS-over-HTTPS 解析 IP 地址，尽可能避免 DNS 污染
 def resolve(domain: str, dns = '1.1.1.1') -> list[str]:
     api_url = f'https://{dns}/dns-query?type=A&name={domain}'
     try:
@@ -81,7 +81,7 @@ def resolve(domain: str, dns = '1.1.1.1') -> list[str]:
         return None
 
 def cross_resolve(domain: str) -> list[str] | None:
-    for dns in ['1.1.1.1', '1.12.12.12', '120.53.53.53']:
+    for dns in ['1.1.1.1', 'dns.alidns.com', 'doh.pub', 'dns.twnic.tw', 'dns.google', 'dns.quad9.net', 'doh.sb']:
         ip_list = resolve(domain, dns)
         if ip_list:
             return ip_list
@@ -89,14 +89,11 @@ def cross_resolve(domain: str) -> list[str] | None:
 
 def ping(ip: str) -> bool:
     try:
-        if subprocess.call(['ping', '-c', '1', ip], stdout=subprocess.DEVNULL, timeout=2) == 0:
-            print('   ✅ ' + ip)
+        if subprocess.call(['ping', '-c', '1', ip], stdout=subprocess.DEVNULL, timeout=1) == 0:
             return True
         else:
-            print('   ❌' + ip)
             return False
     except:
-        print('   ❌' + ip)
         return False
 
 def surfshark():
@@ -183,14 +180,30 @@ def surfshark():
         num = 0
 
         for ip in ip_list:
+            # 检测是否能 ping 通
             if ping(ip):
                 num += 1
-                nmcli.connection.add(name= f'{name} #{num} 🦈', conn_type='vpn', options={
-                    'connection.permissions': f'user:{os.getlogin()}',
-                    'vpn.service-type': 'org.freedesktop.NetworkManager.openvpn',
-                    'vpn.data': f'auth = SHA512, ca = {ca_path}, cipher = AES-256-CBC, connection-type = password, dev = tun, mssfix = 1450, password-flags = 1, ping = 15, ping-restart = 0, remote = {ip}:1194, remote-cert-tls = server, remote-random = yes, reneg-seconds = 0, ta = {ta_path}, ta-dir = 1, tunnel-mtu = 1500, username = {surfshark_user}',
-                    'vpn.secrets': f'password = {surfshark_pass}',
-                })
+                vpn_name = f'{name} #{num} 🦈'
+                try:
+                    nmcli.connection.add(name=vpn_name, conn_type='vpn', options={
+                        'connection.permissions': f'user:{os.getlogin()}',
+                        'vpn.service-type': 'org.freedesktop.NetworkManager.openvpn',
+                        'vpn.data': f'auth = SHA512, ca = {ca_path}, cipher = AES-256-CBC, connection-type = password, dev = tun, mssfix = 1450, password-flags = 1, ping = 15, ping-restart = 0, remote = {ip}:1194, remote-cert-tls = server, remote-random = yes, reneg-seconds = 0, ta = {ta_path}, ta-dir = 1, tunnel-mtu = 1500, username = {surfshark_user}',
+                        'vpn.secrets': f'password = {surfshark_pass}',
+                    })
+                    try:
+                        # 检测 OpenVPN 是否能连接
+                        nmcli.connection.up(vpn_name, wait=5)
+                        nmcli.connection.down(vpn_name)
+                        print(f'   ✅ {ip} 连接成功')
+                    except:
+                        # 不能连接则删除
+                        nmcli.connection.delete(vpn_name)
+                        print(f'   ❌ {ip} 连接失败')
+                except:
+                    print(f'   ❌ {ip} 创建失败')
+            else:
+                print(f'   ❌ {ip} ping 失败')
 
     return servers
 
@@ -199,13 +212,13 @@ def main():
 
     for connection in nmcli.connection():
         if connection.conn_type == 'vpn':
-            # disconnect vpn to detect available server ips
+            # 断开当前的 VPN 连接，以便检测服务器可用性
             try:
                 nmcli.connection.down(connection.name)
             except:
                 pass
 
-            # delete old generated vpn connections
+            # 删除之前生成的 VPN 连接
             if connection.name.find('🦈') > 0:
                 try:
                     nmcli.connection.delete(connection.name)
