@@ -1,10 +1,8 @@
-# Baby Shark
+# Baby Shark [![build result](https://build.opensuse.org/projects/home:guoyunhe/packages/babyshark/badge.svg?type=percent)](https://build.opensuse.org/package/show/home:guoyunhe/babyshark)
 
 ## 安装
 
-```
-sudo zypper install babyshark
-```
+[通过 OBS 安装](https://software.opensuse.org//download.html?project=home%3Aguoyunhe&package=babyshark)
 
 ## 运行
 
