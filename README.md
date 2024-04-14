@@ -2,7 +2,7 @@
 
 ## 安装
 
-[通过 OBS 安装](https://software.opensuse.org//download.html?project=home%3Aguoyunhe&package=babyshark)
+- [openSUSE, SLE, Fedora](https://software.opensuse.org//download.html?project=home%3Aguoyunhe&package=babyshark)
 
 ## 运行
 
