@@ -98,8 +98,7 @@ def ping(ip: str) -> bool:
 
 def surfshark():
     cert_dir = Path.joinpath(Path.home(), '.cert', 'nm-openvpn')
-    if not Path.exists(cert_dir):
-        os.mkdir(cert_dir)
+    Path(cert_dir).mkdir(parents=True, exist_ok=True)
 
     ca_path = Path.joinpath(cert_dir, 'surfshark-ca.pem')
     ca_file = open(ca_path, 'w')
