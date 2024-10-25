@@ -68,8 +68,8 @@ b260f4b45dec3285875589c97d3087c9
 """
 
 # 通过 DNS-over-HTTPS 解析 IP 地址，尽可能避免 DNS 污染
-def resolve(domain: str, dns = '1.1.1.1') -> list[str]:
-    api_url = f'https://{dns}/dns-query?type=A&name={domain}'
+def resolve(domain: str) -> list[str]:
+    api_url = f'https://guoyunhe.me/dns-query.php?type=A&name={domain}'
     try:
         res = requests.get(api_url, headers={'Accept': 'application/dns-json'}, timeout=5)
         data = res.json()
@@ -78,14 +78,7 @@ def resolve(domain: str, dns = '1.1.1.1') -> list[str]:
             ip_list.append(record['data'])
         return ip_list
     except:
-        return None
-
-def cross_resolve(domain: str) -> list[str] | None:
-    for dns in ['1.1.1.1', 'dns.alidns.com', 'doh.pub', 'dns.twnic.tw', 'dns.google', 'dns.quad9.net', 'doh.sb']:
-        ip_list = resolve(domain, dns)
-        if ip_list:
-            return ip_list
-    return None
+        return []
 
 def ping(ip: str) -> bool:
     try:
@@ -111,18 +104,21 @@ def surfshark():
     ta_file.close()
 
     servers = [
+        { 'domain': 'am-evn.prod.surfshark.com', 'name': '亚美尼亚・埃里温' },
         { 'domain': 'au-bne.prod.surfshark.com', 'name': '澳大利亚・布里斯班' },
         { 'domain': 'au-syd.prod.surfshark.com', 'name': '澳大利亚・悉尼' },
         { 'domain': 'az-bak.prod.surfshark.com', 'name': '阿塞拜疆・巴库' },
         { 'domain': 'ba-sjj.prod.surfshark.com', 'name': '波斯尼亚和黑塞哥维那・萨拉热窝' },
         { 'domain': 'be-anr.prod.surfshark.com', 'name': '比利时・安特卫普' },
         { 'domain': 'br-sao.prod.surfshark.com', 'name': '巴西・圣保罗' },
+        { 'domain': 'bt-pbh.prod.surfshark.com', 'name': '不丹・廷布' },
         { 'domain': 'ca-tor.prod.surfshark.com', 'name': '加拿大・多伦多' },
         { 'domain': 'ca-van.prod.surfshark.com', 'name': '加拿大・温哥华' },
         { 'domain': 'cl-san.prod.surfshark.com', 'name': '智利・圣地亚哥' },
         { 'domain': 'co-bog.prod.surfshark.com', 'name': '哥伦比亚・波哥大' },
         { 'domain': 'de-ber.prod.surfshark.com', 'name': '德国・柏林' },
         { 'domain': 'de-fra.prod.surfshark.com', 'name': '德国・法兰克福' },
+        { 'domain': 'dk-cph.prod.surfshark.com', 'name': '丹麦・哥本哈根' },
         { 'domain': 'es-bcn.prod.surfshark.com', 'name': '西班牙・巴塞罗那' },
         { 'domain': 'es-vlc.prod.surfshark.com', 'name': '西班牙・巴伦西亚' },
         { 'domain': 'fr-par.prod.surfshark.com', 'name': '法国・巴黎' },
@@ -135,12 +131,14 @@ def surfshark():
         { 'domain': 'in-del.prod.surfshark.com', 'name': '印度・新德里' },
         { 'domain': 'in-mum.prod.surfshark.com', 'name': '印度・孟买' },
         { 'domain': 'it-mil.prod.surfshark.com', 'name': '意大利・米兰' },
+        { 'domain': 'it-mil.prod.surfshark.com', 'name': '意大利・米兰' },
         { 'domain': 'jp-tok.prod.surfshark.com', 'name': '日本・东京' },
         { 'domain': 'kr-seo.prod.surfshark.com', 'name': '韩国・首尔' },
         { 'domain': 'lt-vno.prod.surfshark.com', 'name': '立陶宛・维尔纽斯' },
         { 'domain': 'lv-rig.prod.surfshark.com', 'name': '拉脱维亚・里加' },
         { 'domain': 'mc-mcm.prod.surfshark.com', 'name': '摩纳哥・蒙特卡洛' },
         { 'domain': 'mm-nyt.prod.surfshark.com', 'name': '缅甸・内比都' },
+        { 'domain': 'mo-mfm.prod.surfshark.com', 'name': '中国・澳门' },
         { 'domain': 'mx-qro.prod.surfshark.com', 'name': '墨西哥・克雷塔罗' },
         { 'domain': 'my-kul.prod.surfshark.com', 'name': '马来西亚・吉隆坡' },
         { 'domain': 'nz-akl.prod.surfshark.com', 'name': '新西兰・奥克兰' },
@@ -150,6 +148,7 @@ def surfshark():
         { 'domain': 'th-bkk.prod.surfshark.com', 'name': '泰国・曼谷' },
         { 'domain': 'tr-ist.prod.surfshark.com', 'name': '土耳其・伊斯坦布尔' },
         { 'domain': 'tw-tai.prod.surfshark.com', 'name': '台湾・台中' },
+        { 'domain': 'ua-iev.prod.surfshark.com', 'name': '乌克兰・基辅' },
         { 'domain': 'uk-edi.prod.surfshark.com', 'name': '英国・爱丁堡' },
         { 'domain': 'uk-gla.prod.surfshark.com', 'name': '英国・格拉斯哥' },
         { 'domain': 'uk-man.prod.surfshark.com', 'name': '英国・曼彻斯特' },
@@ -174,7 +173,7 @@ def surfshark():
         domain = server['domain']
         name = server['name']
         print('📡 ' + domain)
-        ip_list = cross_resolve(domain)
+        ip_list = resolve(domain)
 
         num = 0
 
